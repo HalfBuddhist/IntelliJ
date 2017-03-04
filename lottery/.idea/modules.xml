@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/lottery_data_statistic/lottery_data_statistic.iml" filepath="$PROJECT_DIR$/lottery_data_statistic/lottery_data_statistic.iml" />
+      <module fileurl="file://$PROJECT_DIR$/lottery_wager_calculate/lottery_wager_calculate.iml" filepath="$PROJECT_DIR$/lottery_wager_calculate/lottery_wager_calculate.iml" />
+      <module fileurl="file://$PROJECT_DIR$/lottery_web/lottery_web.iml" filepath="$PROJECT_DIR$/lottery_web/lottery_web.iml" />
+    </modules>
+  </component>
+</project>
+
