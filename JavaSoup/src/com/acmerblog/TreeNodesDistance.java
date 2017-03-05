@@ -8,10 +8,12 @@ package com.acmerblog;
 
 class Node {
     int key;
+    int i;
     Node left, right;
 
     public Node(int i) {
         this.key = i;
+        this.i = 0;
     }
 }
 
