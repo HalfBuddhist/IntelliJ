@@ -1,114 +1,118 @@
 package com.algo_ds.tree;
 
-import java.util.Scanner;
 
+import java.util.Arrays;
+
+/**
+ * an implementations of segment tree or point tree.
+ * on the leaf node, start = end
+ * this tree is build necessarily totally, this tree is static to the range of the points.
+ * <p>
+ * the lazy spreading operation is need to add to the implementation.
+ * 节点懒惰标记下推, see wikipedia
+ * <p>
+ * 整合如下改进
+ * zkw线段树是一种自底向上的线段树，由清华大学的张昆玮提出。
+ * 它相对于传统线段树的优势体现在减少了递归操作和增加了位运算等操作以减少常数。
+ * see the algo special for the ppt.
+ */
 public class SegmentTree {
-    private static final int MAXN = 10000; //maxlen.
-    private static SegmentTreeNode[] tree = new SegmentTreeNode[MAXN]; //存储用数组
-    private static int tod = 0; //数组当前可用结点指针
-    private static int min, max, number = 0;    //存储插入时的结点信息
 
-    public static void main(String[] args) {
-        Scanner scan = new Scanner(System.in);
-        build(1, 100);
-        while (scan.hasNext()) {
-// for (int i = 1; i <= 197; i++)
-// {
-// System.out.println(i + " " + tree[i].min + " " + tree[i].max
-// + " " + tree[i].left + " " + tree[i].right);
-// }
-            number = 0;
-            min = scan.nextInt();
-            max = scan.nextInt();
-            insert(1);
-            count(1);
-            System.out.println(number);
-        }
+    SegmentTreeNode nodes[];
+    int n = 0; // number of the leaves.
+
+
+    public SegmentTree(int[] leaves) {
+        n = leaves.length;
+        // 由线段树的性质可知，建树所需要的空间大概是所需处理
+        // 最长线段长度的2倍多，所以需要开3倍大小的数组
+        nodes = new SegmentTreeNode[n * 3];//this is a nearly full binary tree.
+        Arrays.setAll(nodes, SegmentTreeNode::new); //call the SegmentTreeNode(int value), parameter is the index
+        this.build(1, n, 1, leaves);
     }
 
     /**
-     * build the tree
-     * <p/>
-     * note: 从创建的过程可知，他并不是典型的堆，而是更像是链表，
-     * 不过他的存储结点不是随机的在堆中申请，而是从数组中获取当前可用的结点，
-     * 所以不可用2n为其左结点， 2n+1为其右结点的方式来进行存取。
-     * 从存取上来讲更像是链表。
-     *
-     * @param min0 - start point.
-     * @param max0 - end point.
+     * update value for the parent
      */
-    public static void build(int min0, int max0) {
-        tod++;
-        int now = tod;
-        tree[now] = new SegmentTreeNode();
-        tree[now].min = min0;
-        tree[now].max = max0;
-        if (max0 - min0 >= 1) {
-            int mid = (min0 + max0) >> 1;
-            tree[now].left = tod + 1;
-            build(min0, mid);
-            tree[now].right = tod + 1;
-            build(mid + 1, max0);
-        }
+    private void pushup(int parent) {
+        nodes[parent].value = nodes[parent << 1].value + nodes[parent << 1 | 1].value;
     }
 
-
     /**
-     * insert segment
+     * build the segment tree.
+     * 2*i is the left, 2*i+1 is right child.
+     * 1 is the root, and the corresponing segment is [1,n], start from 1 not 0.
+     * O(2n)
      *
-     * @param num insert point
+     * @param l    node start bound, include
+     * @param r    node end bound, include
+     * @param node node to store the nodes inside the bound.
      */
-    public static void insert(int num) {
-        if (min <= tree[num].min && max >= tree[num].max) {
-            tree[num].cover++;
-        } else if (max < tree[num].min || min > tree[num].max) {
+    protected void build(int l, int r, int node, int[] leaves) {
+        if (l == r) {
+            nodes[node].value = leaves[l - 1];
             return;
-        } else {
-            int mid = (tree[num].min + tree[num].max) >> 1;
-            if (min <= mid) {
-                insert(tree[num].left);
-            }
-            if (max >= mid) {
-                insert(tree[num].right);
-            }
         }
+        int mid = (l + r) >> 1;
+        build(l, mid, node << 1, leaves);
+        build(mid + 1, r, node << 1 | 1, leaves);
+        pushup(node);
     }
-
-    public static void del(int num) {
-        if (min <= tree[num].min && max >= tree[num].max) {
-            tree[num].cover--;
-        } else {
-            int mid = (tree[num].min + tree[num].max) / 2;
-            if (min <= mid) {
-                del(tree[num].left);
-            }
-            if (max >= mid) {
-                del(tree[num].right);
-            }
-        }
-    }
-
 
     /**
-     * count how many seg covered.
+     * add value to some location
+     * 成段更新, 需要用到lazy标记来提高时间效率, 未实现
+     * O(log n)
      *
-     * @param num the count start point
+     * @param pos
+     * @param increment positive or negtive
+     * @param left      left bound of the segment
+     * @param right     right bound of the segment
+     * @param node      location to store the nodes of the value.
      */
-    public static void count(int num) {
-        if (tree[num].cover != 0) {
-            number += tree[num].max - tree[num].min + 1;
-        } else {
-            if (tree[num].left != 0) {
-                count(tree[num].left);
-            }
-
-            if (tree[num].right != 0) {
-                count(tree[num].right);
-            }
+    protected void modify(int pos, long increment, int left, int right, int node) {
+        if (left == right) {
+            nodes[node].value += increment;
+            return;
         }
+        int mid = (left + right) >> 1;
+        if (pos <= mid)
+            modify(pos, increment, left, mid, node << 1);
+        else
+            modify(pos, increment, mid + 1, right, node << 1 | 1);
+        pushup(node);
     }
-}
 
-class SegmentTreeNode {
-    int min, max, left, right, cover;
+    public void modify(int pos, long incre) {
+        this.modify(pos, incre, 1, n, 1);
+    }
+
+    /**
+     * query the L-R interval
+     * if has lazy flag, need to lazy update as follows.
+     * O(log n)
+     *
+     * @param query_left
+     * @param query_right
+     * @param left        left bound of the segment
+     * @param right       right bound of the segment
+     * @param node        store the nodes value
+     * @return
+     */
+    protected long query(int query_left, int query_right, int left, int right, int node) {
+        if (query_left <= left && right <= query_right)
+            return nodes[node].value;
+//        if (lazy[rt]) push_down(rt, r - l + 1);
+        int mid = (left + right) >> 1;
+        long ans = 0;
+        if (query_left <= mid)
+            ans += query(query_left, query_right, left, mid, node << 1);
+        if (query_right > mid)
+            ans += query(query_left, query_right, mid + 1, right, node << 1 | 1);
+        return ans;
+    }
+
+    public long query(int query_left, int query_right) {
+        return this.query(query_left, query_right, 1, n, 1);
+    }
 }

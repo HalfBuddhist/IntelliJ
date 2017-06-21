@@ -2,86 +2,88 @@ package com.algo_ds.tree;
 
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.function.Consumer;
 
 public class BinaryTree<KeyType extends Comparable<KeyType>> extends Tree {
 
     /**
      * 中序遍历, 亦为有序遍历，中根遍历
      */
-    private void inOrder(BinaryTreeNode node) {
+    protected void inOrder(BinaryTreeNode node, Consumer c) {
         if (node != null) {
-            inOrder(node.leftChild);
-            System.out.print(node.key + " ");
-            inOrder(node.rightChild);
+            inOrder(node.left, c);
+            c.accept(node);
+            inOrder(node.right, c);
         }
     }
 
-    public void inOrder() {
-        inOrder((BinaryTreeNode) mRoot);
+    public void inOrder(Consumer<BinaryTreeNode> c) {
+        inOrder((BinaryTreeNode) mRoot, c);
     }
 
 
     /**
      * 前序遍历， 先根遍历
      */
-    private void preOrder(BinaryTreeNode node) {
+    protected void preOrder(BinaryTreeNode node, Consumer c) {
         if (node != null) {
-            System.out.print(node.key + " ");
-            preOrder(node.leftChild);
-            preOrder(node.rightChild);
+            c.accept(node);
+            preOrder(node.left, c);
+            preOrder(node.right, c);
         }
     }
 
-    public void preOrder() {
-        preOrder((BinaryTreeNode) mRoot);
+    public void preOrder(Consumer c) {
+        preOrder((BinaryTreeNode) mRoot, c);
     }
 
 
     /**
      * 后序遍历"Binary树"， 后根遍历, DFS
      */
-    private void postOrder(BinaryTreeNode node) {
+    protected void postOrder(BinaryTreeNode node, Consumer c) {
         if (node != null) {
-            postOrder(node.leftChild);
-            postOrder(node.rightChild);
-            System.out.print(node.key + " ");
+            postOrder(node.left, c);
+            postOrder(node.right, c);
+            c.accept(node);
         }
     }
 
-    public void postOrder() {
-        postOrder((BinaryTreeNode) mRoot);
+    public void postOrder(Consumer c) {
+        postOrder((BinaryTreeNode) mRoot, c);
     }
 
     /**
      * 层次遍历，BFS
      */
-    public void levelorder() {
+    public void levelorder(Consumer c) {
         Queue queue = new LinkedList();
         queue.add(mRoot);
         while (!queue.isEmpty()) {
             BinaryTreeNode node = (BinaryTreeNode) queue.poll();
-            System.out.print(node.key + " ");
+            c.accept(node);
             if (node.hasLeftChild())
-                queue.add(node.leftChild);
+                queue.add(node.left);
             if (node.hasRightChild())
-                queue.add(node.rightChild);
+                queue.add(node.right);
         }
     }
 
 
     /**
      * (递归实现)查找键值为key的节点
+     *
      * @return null if not found, then return the found node.
      */
-    private BinaryTreeNode<KeyType> search(BinaryTreeNode<KeyType> node, KeyType key) {
+    protected BinaryTreeNode<KeyType> search(BinaryTreeNode<KeyType> node, KeyType key) {
         if (node == null)
             return null;
 
         int cmp = key.compareTo((KeyType) node.key);
         if (cmp < 0)
-            return search(node.leftChild, key);
+            return search(node.left, key);
         else if (cmp > 0)
-            return search(node.rightChild, key);
+            return search(node.right, key);
         else
             return node;
     }
@@ -94,13 +96,13 @@ public class BinaryTree<KeyType extends Comparable<KeyType>> extends Tree {
     /**
      * (非递归实现)查找"Binary树x"中键值为key的节点
      */
-    private BinaryTreeNode<KeyType> iterativeSearch(BinaryTreeNode<KeyType> node, KeyType key) {
+    protected BinaryTreeNode<KeyType> iterativeSearch(BinaryTreeNode<KeyType> node, KeyType key) {
         while (node != null) {
             int cmp = key.compareTo((KeyType) node.key);
             if (cmp < 0)
-                node = node.leftChild;
+                node = node.left;
             else if (cmp > 0)
-                node = node.rightChild;
+                node = node.right;
             else
                 return node;
         }
@@ -118,8 +120,8 @@ public class BinaryTree<KeyType extends Comparable<KeyType>> extends Tree {
     protected BinaryTreeNode<KeyType> minimum(BinaryTreeNode<KeyType> node) {
         if (node == null)
             return null;
-        while (node.leftChild != null)
-            node = node.leftChild;
+        while (node.left != null)
+            node = node.left;
         return node;
     }
 
@@ -135,8 +137,8 @@ public class BinaryTree<KeyType extends Comparable<KeyType>> extends Tree {
         if (node == null)
             return null;
 
-        while (node.rightChild != null)
-            node = node.rightChild;
+        while (node.right != null)
+            node = node.right;
         return node;
     }
 
@@ -145,9 +147,14 @@ public class BinaryTree<KeyType extends Comparable<KeyType>> extends Tree {
         return p != null ? (KeyType) (p.key) : null;
     }
 
+
+    protected BinaryTreeNode<KeyType> createBinaryTreeNode(KeyType key, BinaryTreeNode<KeyType> left, BinaryTreeNode<KeyType> right, BinaryTreeNode<KeyType> parent) {
+        return new BinaryTreeNode<KeyType>(key, left, right, parent);
+    }
+
     /**
      * 将结点插入到AVL树中，并返回根节点
-     * <p/>
+     * <p>
      * 参数说明：
      * tree AVL树的根结点
      * key 插入的结点的键值
@@ -156,16 +163,17 @@ public class BinaryTree<KeyType extends Comparable<KeyType>> extends Tree {
      */
     protected BinaryTreeNode<KeyType> insert(BinaryTreeNode<KeyType> node, KeyType key) {
         if (node == null) {
-            node = new BinaryTreeNode<KeyType>(key, null, null, null);
+            node = createBinaryTreeNode(key, null, null, null);
+//            node = new BinaryTreeNode<KeyType>(key, null, null, null);
             this.size++;
         } else {
             int cmp = key.compareTo((KeyType) (node.key));
             if (cmp < 0) {    // 应该将key插入到"tree的左子树"的情况
-                node.leftChild = insert(node.leftChild, key);
-                node.leftChild.parent = node;
+                node.left = insert(node.left, key);
+                node.left.parent = node;
             } else if (cmp > 0) {    // 应该将key插入到"tree的右子树"的情况
-                node.rightChild = insert(node.rightChild, key);
-                node.rightChild.parent = node;
+                node.right = insert(node.right, key);
+                node.right.parent = node;
             } else {    // cmp==0
                 System.out.println("添加失败：不允许添加相同的节点！");
             }
@@ -191,24 +199,24 @@ public class BinaryTree<KeyType extends Comparable<KeyType>> extends Tree {
         if (node_del.isLeaf()) {
             return null;
         } else if (!node_del.hasRightChild()) {
-            return node_del.leftChild;
+            return node_del.left;
         } else if (!node_del.hasLeftChild()) {
-            return node_del.rightChild;
+            return node_del.right;
         } else {
             //has both
             BinaryTreeNode father = node_del;
-            BinaryTreeNode child = father.leftChild;
-            while (child.rightChild != null) { //转左，然后向右到尽头
+            BinaryTreeNode child = father.left;
+            while (child.right != null) { //转左，然后向右到尽头
                 father = child;
-                child = child.rightChild;
+                child = child.right;
             }
             node_del.key = child.key;
             if (father != node_del) {
-                father.rightChild = child.leftChild;    //重接*father的右子树
-                if (father.rightChild != null) father.rightChild.parent = father;
+                father.right = child.left;    //重接*father的右子树
+                if (father.right != null) father.right.parent = father;
             } else {
-                father.leftChild = child.leftChild; //重接*father的右子树的左子树
-                if (father.leftChild != null) father.leftChild.parent = father;
+                father.left = child.left; //重接*father的右子树的左子树
+                if (father.left != null) father.left.parent = father;
             }
             return node_del;
         }
@@ -227,12 +235,12 @@ public class BinaryTree<KeyType extends Comparable<KeyType>> extends Tree {
         } else {
             int cmp = key.compareTo((KeyType) (node.key));
             if (cmp < 0) {
-                node.leftChild = remove(node.leftChild, key);
-                if (node.leftChild != null) node.leftChild.parent = node;
+                node.left = remove(node.left, key);
+                if (node.left != null) node.left.parent = node;
                 return node;
             } else if (cmp > 0) {
-                node.rightChild = remove(node.rightChild, key);
-                if (node.rightChild != null) node.rightChild.parent = node;
+                node.right = remove(node.right, key);
+                if (node.right != null) node.right.parent = node;
                 return node;
             } else {
                 this.size--;
@@ -255,27 +263,27 @@ public class BinaryTree<KeyType extends Comparable<KeyType>> extends Tree {
 
         int cmp = key.compareTo(node.key);
         if (cmp < 0) {        // 待删除的节点在"tree的左子树"中
-            node.leftChild = delete(node.leftChild, key);
-            if (node.leftChild != null) node.leftChild.parent = node;
+            node.left = delete(node.left, key);
+            if (node.left != null) node.left.parent = node;
         } else if (cmp > 0) {    // 待删除的节点在"tree的右子树"中
-            node.rightChild = delete(node.rightChild, key);
-            if (node.rightChild != null) node.rightChild.parent = node;
+            node.right = delete(node.right, key);
+            if (node.right != null) node.right.parent = node;
         } else {    // tree是对应要删除的节点。
             // tree的左右孩子都非空
-            if ((node.leftChild != null) && (node.rightChild != null)) {
+            if ((node.left != null) && (node.right != null)) {
                 //find the prer.
-                BinaryTreeNode max = maximum(node.leftChild);
+                BinaryTreeNode max = maximum(node.left);
                 node.key = max.key;
-                node.leftChild = delete(node.leftChild, max.key);
-                if (node.leftChild != null) node.leftChild.parent = node;
+                node.left = delete(node.left, max.key);
+                if (node.left != null) node.left.parent = node;
                 //or find the successor
-//                AVLTreeNode min = (AVLTreeNode) minimum(node.rightChild);
+//                AVLTreeNode min = (AVLTreeNode) minimum(node.right);
 //                node.key = min.key;
-//                node.rightChild = remove(node.rightChild, min.key);
-//                if (node.rightChild != null) ((AVLTreeNode) node.rightChild).parent = node;
+//                node.right = remove(node.right, min.key);
+//                if (node.right != null) ((AVLTreeNode) node.right).parent = node;
             } else {
                 size--;
-                return (node.leftChild != null) ? node.leftChild : node.rightChild;
+                return (node.left != null) ? node.left : node.right;
             }
         }
         return node;
@@ -295,15 +303,15 @@ public class BinaryTree<KeyType extends Comparable<KeyType>> extends Tree {
      * -1，表示该节点是它的父结点的左孩子;
      * 1，表示该节点是它的父结点的右孩子。
      */
-    private void print(BinaryTreeNode<KeyType> node, KeyType key, int direction) {
+    protected void print(BinaryTreeNode<KeyType> node, KeyType key, int direction) {
         if (node != null) {
             if (direction == 0)    // tree是根节点
                 System.out.printf("%s is root\n", node.key);
             else                // tree是分支节点
                 System.out.printf("%s is %s's %6s child\n", node.key, key, direction == 1 ? "right" : "left");
 
-            print(node.leftChild, (KeyType) node.key, -1);
-            print(node.rightChild, (KeyType) node.key, 1);
+            print(node.left, (KeyType) node.key, -1);
+            print(node.right, (KeyType) node.key, 1);
         }
     }
 
@@ -312,52 +320,66 @@ public class BinaryTree<KeyType extends Comparable<KeyType>> extends Tree {
             print((BinaryTreeNode) mRoot, (KeyType) mRoot.key, 0);
     }
 
+    /**
+     * 辅助方法，合并两个双链表
+     *
+     * @param a
+     * @param b
+     * @return
+     */
+    protected BinaryTreeNode append(BinaryTreeNode a, BinaryTreeNode b) {
+        if (a == null) return (b);
+        if (b == null) return (a);
 
-    public static void main(String[] argv) {
-        int arr[] = {3, 2, 1, 4, 5, 6, 7, 16, 15, 14, 13, 12, 11, 10, 8, 9};
-//        int arr[] = {3, 4, 6, 2, 5, 1};
+        // 分别得到两个链表的最后一个元素
+        BinaryTreeNode aLast = a.left;
+        BinaryTreeNode bLast = b.left;
 
-        BinaryTree<Integer> tree = new BinaryTree<Integer>();
-        System.out.printf("== 依次添加: ");
-        for (int i : arr) {
-            System.out.printf("insert %d ", i);
-            tree.insert(i);
-        }
+        // 将两个链表 头尾相连
+        aLast.right = b;
+        b.left = aLast;
 
-        System.out.printf("\n== 前序遍历: ");
-        tree.preOrder();
+        bLast.right = a;
+        a.left = bLast;
 
-        System.out.printf("\n== 中序遍历: ");
-        tree.inOrder();
-
-        System.out.printf("\n== 后序遍历: ");
-        tree.postOrder();
-        System.out.printf("\n");
-
-        System.out.printf("\n== 层次遍历: ");
-        tree.levelorder();
-        System.out.printf("\n");
-
-        System.out.printf("== 最小值: %d\n", tree.minimum());
-        System.out.printf("== 最大值: %d\n", tree.maximum());
-        System.out.printf("== 数量值: %d\n", tree.getSize());
-        System.out.printf("== 树的详细信息: \n");
-        tree.print();
-
-        //test the find func
-        System.out.println(tree.search(5));
-        System.out.println(tree.iterativeSearch(5));
-
-        int i = 7;
-        System.out.printf("\n== 删除节点: %d", i);
-        tree.delete(i);
-
-        System.out.printf("\n== 中序遍历: ");
-        tree.inOrder();
-        System.out.printf("\n== 树的详细信息: \n");
-        tree.print();
-        System.out.printf("== 数量值: %d\n", tree.getSize());
-        System.out.println("hello world!");
+        return (a);
     }
 
+    /**
+     * 二分查找树转化为有序的循环双链表
+     * 输入一棵二元查找树，将该二元查找树转换成一个排序的双向链表。
+     * 要求不能创建任何新的结点，只调整指针的指向
+     * 如果不限制空间，则可以在中序遍历的过程中使用回调函数形成一个新的LinkedList即可
+     * <p>
+     * 递归的解决二叉树转换为双链表
+     * 假定每个递归调用都会返回构建好的双链表，可把问题分解为左右两个子树。
+     * 由于左右子树都已经是有序的，当前节点作为中间的一个节点，把左右子树得到的链表连接起来即可。
+     * O(n),
+     * n, numbers of the nodes in the bst.
+     *
+     * @param root
+     * @return
+     */
+    protected BinaryTreeNode convert2CycledDoubleLL(BinaryTreeNode root) {
+        if (root == null) return null;
+
+        // 递归解决子树
+        BinaryTreeNode aList = convert2CycledDoubleLL(root.left);
+        BinaryTreeNode bList = convert2CycledDoubleLL(root.right);
+
+        // 把根节点转换为一个节点的双链表。方便后面的链表合并
+        root.left = root;
+        root.right = root;
+
+        //合并之后即为升序排列，顺序为 (aList, root, bList)
+        aList = append(aList, root);
+        aList = append(aList, bList);
+
+        return (aList);
+    }
+
+
+    public BinaryTreeNode convert2CycledDoubleLL() {
+        return convert2CycledDoubleLL((BinaryTreeNode) mRoot);
+    }
 }

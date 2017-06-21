@@ -1,57 +1,85 @@
-import java.math.BigDecimal;
-import java.util.Scanner;
-
-import java.math.BigInteger;
-
-class Factorial {
-    public static BigInteger iterative_factorial(BigInteger p) throws Exception {
-        int cmp = p.compareTo(BigInteger.ZERO);
-        if (cmp < 0)
-            throw new Exception("parameter should be non-negtive.");
-        else {
-            BigInteger ini = BigInteger.ONE;
-            BigInteger idx = BigInteger.ONE;
-            int cmp1 = idx.compareTo(p);
-            while (cmp1 <= 0) {
-                ini = ini.multiply(idx);
-                idx = idx.add(BigInteger.ONE);
-                cmp1 = idx.compareTo(p);
-            }
-            return ini;
-        }
+package com.leetcode;
+import com.lqw.common.WebPath;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.*;
+class AdjListNode {
+    int weight;
+    int target;
+    public AdjListNode(int weight, int target) {
+        this.weight = weight;
+        this.target = target;
     }
 }
+class DirectedGraphSparse {
+    public int V;//node cnt
+    public LinkedList<AdjListNode>[] adjacentLists;
+    public static final int INF = Integer.MAX_VALUE;
+    public DirectedGraphSparse(LinkedList[] adjacentLists) {
+        this.V = adjacentLists.length;
+        this.adjacentLists = adjacentLists;
+    }
+    public int[] shortestPath(int src, boolean ifRecordPath, int[] path_in_parent, Stack<Integer> stack_toplogical) {
+        // Initialize distances to all vertices as infinite and distance to source as 0
+        int dist[] = new int[V];
+        for (int i = 0; i < V; i++) {
+            dist[i] = INF;
+            if (ifRecordPath) path_in_parent[i] = -1;
+        }
+        dist[src] = 0;
+        if (ifRecordPath)
+        path_in_parent[src] = src;
 
+        // Process vertices in topological order
+        while (!stack_toplogical.empty()) {
+            // Get the next vertex from topological order
+            int u = stack_toplogical.pop();
 
+            // Update distances of all adjacent vertices
+            Iterator<AdjListNode> it;
+            if (dist[u] != INF) {
+                it = adjacentLists[u].iterator();
+                while (it.hasNext()) {
+                    AdjListNode i = it.next();
+                    if (dist[i.target] > dist[u] + i.weight) {
+                        dist[i.target] = dist[u] + i.weight;
+                        if (ifRecordPath) path_in_parent[i.target] = u;
+                    }
+                }
+            }
+        }
+        return dist;
+    }
+}
 public class Solution {
+    public int minPathSum2(int[][] grid) {
+        int m = grid.length;
+        int n = m > 0 ? grid[0].length : 0;
+        LinkedList[] adj = new LinkedList[m * n];//overflow??
+        Arrays.setAll(adj, i -> {
+            return new LinkedList<AdjListNode>();
+        });
 
-    public static void main(String[] args) throws Exception {
-        Scanner sc = new Scanner(System.in);
-        int n = sc.nextInt();
-        int[] r = new int[100];
-        int[] a = new int[n];
-        boolean isorder = true;
-        for (int i = 0; i < n; i++) {
-            a[i] = sc.nextInt();
-            r[i] += 1;
-            if (i > 0 && a[i] < a[i - 1]) {
-                isorder = false;
+        //form the graph and toplogical
+        Stack<Integer> order = new Stack<>();
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (j < n - 1) {
+                    adj[j + i * n].add(new AdjListNode(grid[i][j] + grid[i][j + 1], j + i * n + 1));
+//                    adj[j + i * n + 1].add(new AdjListNode(grid[i][j] + grid[i][j + 1], j + i * n));
+                }
+                if (i < m - 1) {
+                    adj[j + i * n].add(new AdjListNode(grid[i][j] + grid[i + 1][j], j + (i + 1) * n));
+//                    adj[j + (i + 1) * n].add(new AdjListNode(grid[i][j] + grid[i + 1][j], j + i * n));
+                }
+
+                order.push(m * n - 1 - (j + i * n));
             }
         }
 
-//        if (isorder) {
-//            System.out.printf("%.6f", 0.0);
-//        } else {
-            //calcute the p
-            BigInteger fenzi = BigInteger.ONE;
-            for (int t : r) {
-                fenzi = fenzi.multiply(Factorial.iterative_factorial(BigInteger.valueOf(t)));
-            }
-            BigDecimal prop = new BigDecimal(fenzi).divide(new BigDecimal(Factorial.iterative_factorial(BigInteger.valueOf(n))));
-            BigDecimal answer = BigDecimal.ONE.divide(prop);
-
-            //resolve the closed form
-            System.out.printf("%.6f", answer.doubleValue());
-//        }
+        //bellman-ford
+        DirectedGraphSparse graphSparse = new DirectedGraphSparse(adj);
+        int dist[] = graphSparse.shortestPath(0, false, null, order);
+        return (dist[m * n - 1] + grid[0][0] + grid[m - 1][n - 1]) / 2;
     }
 }

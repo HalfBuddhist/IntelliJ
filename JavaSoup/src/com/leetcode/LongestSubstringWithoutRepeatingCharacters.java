@@ -23,8 +23,6 @@ public class LongestSubstringWithoutRepeatingCharacters {
                 //move start and end
                 //remove char in map
                 int new_start = map.get(s.charAt(end));
-
-                assert (new_start < start);
                 for (int i = start + 1; i <= new_start; i++) {
                     map.remove(s.charAt(i));
                 }

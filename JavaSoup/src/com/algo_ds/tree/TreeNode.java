@@ -1,20 +1,25 @@
 package com.algo_ds.tree;
 
-public class TreeNode<KeyType extends Comparable<KeyType>> {
-    protected KeyType key;
-    protected TreeNode<KeyType> parent = null;
+public class TreeNode<T extends Comparable<T>> {
+    protected T key;
+    protected TreeNode<T> parent = null;
 
-    public TreeNode(KeyType key, TreeNode<KeyType> parent) {
+    //constructers
+    public TreeNode(T key, TreeNode<T> parent) {
         this.key = key;
         this.parent = parent;
     }
 
+    protected void replaceNodeData(TreeNode<T> from) {
+        this.key = from.key;
+    }
+
     //getters.
-    public KeyType getKey() {
+    public T getKey() {
         return key;
     }
 
-    public TreeNode<KeyType> getParent() {
+    public TreeNode<T> getParent() {
         return parent;
     }
 }

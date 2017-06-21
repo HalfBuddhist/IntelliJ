@@ -53,7 +53,7 @@ public class MusicOnTheStreet {
                         break;
                     } else {
                         //could be end?
-                        int l = m - cur_miles;//left miles;
+                        int l = m - cur_miles;//start miles;
                         if (((idx_start != next) &&
                                 (l >= 2 * min && l <= 2 * max && l <= getLen(idx_start) + getLen(next))) ||
                                 ((idx_start == next) && (l >= min && l <= max && l <= getLen(idx_start)))) {

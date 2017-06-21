@@ -1,0 +1,228 @@
+import com.lqw.common.WebPath;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+import java.util.LinkedList;
+class TreeNode<KeyType extends Comparable<KeyType>> {
+    protected KeyType key;
+    protected TreeNode<KeyType> parent = null;
+    public TreeNode(KeyType key, TreeNode<KeyType> parent) {
+        this.key = key;
+        this.parent = parent;
+    }
+    protected void replaceNodeData(TreeNode<KeyType> from) {
+        this.key = from.key;
+    }
+    public KeyType getKey() {
+        return key;
+    }
+    public TreeNode<KeyType> getParent() {
+        return parent;
+    }
+}
+class BinaryTreeNode<KeyType extends Comparable<KeyType>> extends TreeNode {
+    protected BinaryTreeNode<KeyType> leftChild = null;
+    protected BinaryTreeNode<KeyType> rightChild = null;
+    public BinaryTreeNode(KeyType key, BinaryTreeNode<KeyType> leftChild,
+                          BinaryTreeNode<KeyType> rightChild,
+                          BinaryTreeNode<KeyType> parent) {
+        super(key, parent);
+        this.leftChild = leftChild;
+        this.rightChild = rightChild;
+    }
+    public boolean hasLeftChild() {
+        return !(this.leftChild == null);
+    }
+    public boolean hasRightChild() {
+        return !(this.rightChild == null);
+    }
+    public boolean isLeftChild() {
+        return this.parent != null && (((BinaryTreeNode) this.parent).leftChild == this);
+    }
+    public boolean isRightChild() {
+        return this.parent != null && (((BinaryTreeNode) this.parent).rightChild == this);
+    }
+}
+class Interval {
+    public int start;
+    public int end;
+    public Interval() {
+        start = 0;
+        end = 0;
+    }
+    public Interval(int left, int right) {
+        this.start = left;
+        this.end = right;
+    }
+    public int mid() {
+        return (start + end) / 2;
+    }
+    public boolean isSinglePoint() {
+        return start == end;
+    }
+    public boolean include(int i) {
+        return i >= start && i <= end;
+    }
+    public int where(int i) {
+        if (include(i)) return 0;
+        else return i < start ? -1 : 1;
+    }
+    @Override
+    public boolean equals(Object obj) {
+        Interval t = (Interval) obj;
+        return start == t.start && end == t.end;
+    }
+}
+class IntervalTreeNode extends BinaryTreeNode {
+    public Interval interval;
+    public int value; //statistic info on the interval of current
+    public IntervalTreeNode(Interval interval, IntervalTreeNode leftChild, IntervalTreeNode rightChild,
+                            IntervalTreeNode parent, int value) {
+        super(interval.mid(), leftChild, rightChild, parent);
+        this.value = value;
+        this.interval = interval;
+    }
+}
+class Tree<KeyType extends Comparable<KeyType>> {
+    protected TreeNode<KeyType> mRoot = null;   // 根结点
+    protected int size = 0;
+    public Tree() {
+        this.mRoot = null;
+        this.size = 0;
+    }
+}
+class BinaryTree<KeyType extends Comparable<KeyType>> extends Tree {
+}
+interface Traversalable {
+    void traversal(TreeNode node);
+}
+class IntervalTree extends BinaryTree {
+    public IntervalTree(Interval interval) {
+        this.mRoot = new IntervalTreeNode(interval, null, null, null, 0);
+        size++;
+    }
+    protected IntervalTreeNode add(BinaryTreeNode node1, Interval interval) {
+        IntervalTreeNode node = (IntervalTreeNode) node1;
+        if (node.value > 0) {//has covered
+            node.value++;
+            return node;
+        }
+        if (node.interval.equals(interval)) {
+            node.value++;
+        } else {
+            if (!node.hasRightChild()) {
+                node.rightChild = new IntervalTreeNode(new Interval((Integer) node.key, node.interval.end),
+                        null, null, node, 0);
+                size++;
+            }
+            if (!node.hasLeftChild()) {
+                node.leftChild = new IntervalTreeNode(new Interval(node.interval.start, (Integer) node.key),
+                        null, null, node, 0);
+                size++;
+            }
+            if (interval.start >= (Integer) node.key) { // insert end
+                add(node.rightChild, interval);
+            } else if (interval.end <= (Integer) node.key) { // insert start
+                add(node.leftChild, interval);
+            } else { // split and insert
+                add(node.rightChild, new Interval((Integer) node.key, interval.end));
+                add(node.leftChild, new Interval(interval.start, (Integer) node.key));
+            }
+            if (((IntervalTreeNode) node.leftChild).value > 0 && ((IntervalTreeNode) node.rightChild).value > 0) {
+                node.value = ((IntervalTreeNode) node.rightChild).value + ((IntervalTreeNode) node.leftChild).value;
+            }
+        }
+        return node;
+    }
+    public void add(Interval interval) {
+        mRoot = add((IntervalTreeNode) mRoot, interval);
+    }
+    protected void preOrder(BinaryTreeNode node1, Traversalable t) {
+        IntervalTreeNode node = (IntervalTreeNode) node1;
+        if (node != null) {
+            if (node.value > 0) {
+                t.traversal(node);
+            } else {
+                preOrder(node.leftChild, t);
+                preOrder(node.rightChild, t);
+            }
+        }
+    }
+    public void preOrder(Traversalable t) {
+        preOrder((BinaryTreeNode) mRoot, t);
+    }
+}
+public class Solution {
+    public List<Interval> merge(List<Interval> intervals) {
+        int min = Integer.MAX_VALUE;
+        int max = Integer.MIN_VALUE;
+        ArrayList<Interval> longIntervals = new ArrayList<Interval>();
+        ArrayList<Integer> singles = new ArrayList<>();
+        for (Interval i : intervals) {
+            if (i.isSinglePoint()) {
+                singles.add(i.start);
+            } else {
+                min = Math.min(min, i.start);
+                max = Math.max(max, i.end);
+                longIntervals.add(i);
+            }
+        }
+        singles.sort(null);
+        LinkedList<Integer> l = new LinkedList(singles);
+        IntervalTree intervalTree = new IntervalTree(new Interval(min, max));
+        for (Interval i : longIntervals) {
+            intervalTree.add(i);
+        }
+        ArrayList<Interval> ans = new ArrayList<Interval>();
+        intervalTree.preOrder(new Traversalable() {
+            @Override
+            public void traversal(TreeNode node) {
+                IntervalTreeNode n = (IntervalTreeNode) node;
+                while (!l.isEmpty()) {
+                    int top = l.peek();
+                    int cmp = n.interval.where(top);
+                    if (cmp < 0) {
+                        ans.add(new Interval(top, top));
+                        l.pollFirst();
+                    } else if (cmp == 0) {
+                        l.pollFirst();
+                    }
+                }
+                if (ans.size() == 0) {
+                    ans.add(n.interval);
+                } else {
+                    Interval i = ans.get(ans.size() - 1);
+                    if (i.end == n.interval.start) {
+                        i.end = n.interval.end;
+                    } else {
+                        ans.add(n.interval);
+                    }
+                }
+            }
+        });
+        while(!l.isEmpty()){
+            int top = l.pollFirst();
+            ans.add(new Interval(top, top));
+        }
+        return ans;
+    }
+    public static void main(String[] argv) throws FileNotFoundException {
+        long begin = System.currentTimeMillis();
+        Scanner sc = new Scanner(new File(WebPath.getAbsolutePathWithClass("/input.txt").getPath()));
+        int n = sc.nextInt();
+        ArrayList<Interval> arr = new ArrayList<Interval>();
+        while (n-- > 0) {
+            int s = sc.nextInt();
+            int e = sc.nextInt();
+            arr.add(new Interval(s, e));
+        }
+        List<Interval> ans = (new Solution()).merge(arr);
+        for (Interval i : ans) {
+            System.out.println(i.start + " " + i.end);
+        }
+        sc.close();
+        System.err.println("use time: " + (System.currentTimeMillis() - begin) / 1000.0 + " seconds.");
+    }
+}

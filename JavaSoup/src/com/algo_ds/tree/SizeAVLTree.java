@@ -10,11 +10,6 @@ package com.algo_ds.tree;
 public class SizeAVLTree<KeyType extends Comparable<KeyType>> extends AVLTree {
 
     /**
-     * application variables
-     */
-    public boolean isTooChaos = false;
-
-    /**
      * tree variables
      */
     private int greatInverseCnt = 0; //the inversions counter, is the ele who large that it.
@@ -42,7 +37,7 @@ public class SizeAVLTree<KeyType extends Comparable<KeyType>> extends AVLTree {
         SizeAVLTreeNode newroot = (SizeAVLTreeNode) super.leftLeftRotation(oldroot1);
         SizeAVLTreeNode oldroot = (SizeAVLTreeNode) oldroot1;
 
-        //updathe the leftcnt and right cnt;
+        //updathe the leftcnt and end cnt;
         (oldroot).leftCnt = newroot.rightCnt;
         newroot.rightCnt += oldroot.rightCnt + 1;
 
@@ -58,7 +53,7 @@ public class SizeAVLTree<KeyType extends Comparable<KeyType>> extends AVLTree {
         SizeAVLTreeNode newroot = (SizeAVLTreeNode) super.rightRightRotation(oldroot1);
         SizeAVLTreeNode oldroot = (SizeAVLTreeNode) oldroot1;
 
-        //updatet the leftcnt and right cnt;
+        //updatet the leftcnt and end cnt;
         oldroot.rightCnt = newroot.leftCnt;
         newroot.leftCnt += oldroot.leftCnt + 1;
 
@@ -75,29 +70,29 @@ public class SizeAVLTree<KeyType extends Comparable<KeyType>> extends AVLTree {
         } else {
             int cmp = key.compareTo(node.key);
             if (cmp < 0) {    // 应该将key插入到"tree的左子树"的情况
-                node.leftChild = insert(node.leftChild, key);
-                node.leftChild.parent = node;
+                node.left = insert(node.left, key);
+                node.left.parent = node;
                 if (inserted) {
                     node.leftCnt++;
                     this.greatInverseCnt += node.rightCnt + 1;
                 }
                 // 插入节点后，若AVL树失去平衡，则进行相应的调节。
-                if (height((SizeAVLTreeNode) node.leftChild) - height((SizeAVLTreeNode) node.rightChild) == 2) {
-                    if (key.compareTo(node.leftChild.key) < 0)
+                if (height((SizeAVLTreeNode) node.left) - height((SizeAVLTreeNode) node.right) == 2) {
+                    if (key.compareTo(node.left.key) < 0)
                         node = (SizeAVLTreeNode) leftLeftRotation(node);
                     else
                         node = (SizeAVLTreeNode) leftRightRotation(node);
                 }
             } else if (cmp > 0) {    // 应该将key插入到"tree的右子树"的情况
-                node.rightChild = insert(node.rightChild, key);
-                node.rightChild.parent = node;
+                node.right = insert(node.right, key);
+                node.right.parent = node;
                 if (inserted) {
                     node.rightCnt++;
                     this.lessInverseCnt += node.leftCnt + 1;
                 }
                 // 插入节点后，若AVL树失去平衡，则进行相应的调节。
-                if (height((AVLTreeNode) node.rightChild) - height((AVLTreeNode) node.leftChild) == 2) {
-                    if (key.compareTo(node.rightChild.key) > 0)
+                if (height((AVLTreeNode) node.right) - height((AVLTreeNode) node.left) == 2) {
+                    if (key.compareTo(node.right.key) > 0)
                         node = (SizeAVLTreeNode) rightRightRotation(node);
                     else
                         node = (SizeAVLTreeNode) rightLeftRotation(node);
@@ -108,7 +103,7 @@ public class SizeAVLTree<KeyType extends Comparable<KeyType>> extends AVLTree {
             }
         }
 
-        node.height = max(height((AVLTreeNode) node.leftChild), height((AVLTreeNode) node.rightChild)) + 1;
+        node.height = Math.max(height((AVLTreeNode) node.left), height((AVLTreeNode) node.right)) + 1;
 
         return node;
     }

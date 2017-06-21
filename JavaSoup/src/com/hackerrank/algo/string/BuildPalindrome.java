@@ -61,7 +61,7 @@ public class BuildPalindrome {
                     max_len_plin[axis1 - exp] = Math.max(max_len_plin[axis1 - exp], base + 2 * exp);
                 }
             }
-            //shift right.
+            //shift end.
             if (axis1 == axis2) axis2++;
             else axis1++;
         }

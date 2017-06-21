@@ -1,31 +1,30 @@
 package com.algo_ds.tree;
 
-public class BinaryTreeNode<KeyType extends Comparable<KeyType>> extends TreeNode {
-    protected BinaryTreeNode<KeyType> leftChild = null;
-    protected BinaryTreeNode<KeyType> rightChild = null;
+public class BinaryTreeNode<T extends Comparable<T>> extends TreeNode {
+    //children
+    protected BinaryTreeNode<T> left = null;
+    protected BinaryTreeNode<T> right = null;
 
-    public BinaryTreeNode(KeyType key, BinaryTreeNode<KeyType> leftChild,
-                          BinaryTreeNode<KeyType> rightChild,
-                          BinaryTreeNode<KeyType> parent) {
+    public BinaryTreeNode(T key, BinaryTreeNode<T> left, BinaryTreeNode<T> right, BinaryTreeNode<T> parent) {
         super(key, parent);
-        this.leftChild = leftChild;
-        this.rightChild = rightChild;
+        this.left = left;
+        this.right = right;
     }
 
     public boolean hasLeftChild() {
-        return !(this.leftChild == null);
+        return !(this.left == null);
     }
 
     public boolean hasRightChild() {
-        return !(this.rightChild == null);
+        return !(this.right == null);
     }
 
-    public boolean isLeftChild() {
-        return this.parent != null && (((BinaryTreeNode) this.parent).leftChild == this);
+    public boolean getLeft() {
+        return this.parent != null && (((BinaryTreeNode) this.parent).left == this);
     }
 
-    public boolean isRightChild() {
-        return this.parent != null && (((BinaryTreeNode) this.parent).rightChild == this);
+    public boolean getRight() {
+        return this.parent != null && (((BinaryTreeNode) this.parent).right == this);
     }
 
     public boolean isRoot() {
@@ -33,26 +32,27 @@ public class BinaryTreeNode<KeyType extends Comparable<KeyType>> extends TreeNod
     }
 
     public boolean isLeaf() {
-        return (this.leftChild == null) && (this.rightChild == null);
+        return (this.left == null) && (this.right == null);
     }
 
     public boolean hasAnyChildren() {
-        return (this.leftChild != null) || (this.rightChild != null);
+        return (this.left != null) || (this.right != null);
     }
 
     public boolean hasBothChildren() {
-        return (this.leftChild != null) && (this.rightChild != null);
+        return (this.left != null) && (this.right != null);
     }
 
-    protected void replaceNodeData(KeyType key, BinaryTreeNode<KeyType> left, BinaryTreeNode<KeyType> right) {
+    protected void replaceNodeData(T key, BinaryTreeNode<T> left, BinaryTreeNode<T> right) {
         this.key = key;
-        this.leftChild = left;
-        this.rightChild = right; // discard the original childrens
+        this.left = left;
+        this.right = right; // discard the original childrens
         if (hasLeftChild())
-            leftChild.parent = this;
+            this.left.parent = this;
         if (hasRightChild())
-            rightChild.parent = this;
+            this.right.parent = this;
     }
+
 
     public String toString() {
         if (parent != null)
@@ -62,13 +62,13 @@ public class BinaryTreeNode<KeyType extends Comparable<KeyType>> extends TreeNod
     }
 
     //setters and getters.
-    public BinaryTreeNode<KeyType> getLeftChild() {
-        return leftChild;
+    public BinaryTreeNode<T> getLeftChild() {
+        return left;
     }
 
 
-    public BinaryTreeNode<KeyType> getRightChild() {
-        return rightChild;
+    public BinaryTreeNode<T> getRightChild() {
+        return right;
     }
 
 }

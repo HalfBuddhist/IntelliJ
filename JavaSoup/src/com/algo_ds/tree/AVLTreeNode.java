@@ -17,12 +17,12 @@ public class AVLTreeNode<KeyType extends Comparable<KeyType>> extends BinaryTree
     protected void replaceNodeData(KeyType key, AVLTreeNode<KeyType> left, AVLTreeNode<KeyType> right,
                                    int height) {
         this.key = key;
-        this.leftChild = left;
-        this.rightChild = right; // discard the original childrens
+        this.left = left;
+        this.right = right; // discard the original childrens
         if (hasLeftChild())
-            leftChild.parent = this;
+            this.left.parent = this;
         if (hasRightChild())
-            rightChild.parent = this;
+            this.right.parent = this;
         this.height = height;
     }
 

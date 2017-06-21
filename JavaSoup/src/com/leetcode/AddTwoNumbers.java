@@ -13,6 +13,12 @@ class ListNode {
     ListNode(int x) {
         val = x;
     }
+
+
+    ListNode(int x, ListNode next) {
+        val = x;
+        this.next = next;
+    }
 }
 
 public class AddTwoNumbers {
@@ -38,7 +44,7 @@ public class AddTwoNumbers {
             cur = cur.next;
             nnull = nnull.next;
         }
-        if (jin != 0 ){
+        if (jin != 0) {
             cur.next = new ListNode(1);
         }
 
@@ -63,7 +69,7 @@ public class AddTwoNumbers {
 
         ListNode ans = (new AddTwoNumbers()).addTwoNumbers(l1, l2);
 
-        while (ans  != null){
+        while (ans != null) {
             System.out.print(ans.val);
             ans = ans.next;
         }

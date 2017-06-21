@@ -47,6 +47,6 @@ public class TrieTreeUsedTest {
         String prefix = "vi";
         int cnt = trie.selectPrefixCount(prefix);
         System.out.println(cnt);
-        Assert.assertEquals("vi prefix cnt:", 1600 ,cnt);
+        Assert.assertEquals("vi prefix cnt:", 1926 ,cnt);
     }
 }

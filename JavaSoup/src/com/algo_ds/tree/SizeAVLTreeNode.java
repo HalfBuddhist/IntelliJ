@@ -2,8 +2,8 @@ package com.algo_ds.tree;
 
 
 public class SizeAVLTreeNode<KeyType extends Comparable<KeyType>> extends AVLTreeNode {
-    protected int leftCnt = 0;
-    protected int rightCnt = 0;
+    protected int leftCnt = 0; // number of the start children
+    protected int rightCnt = 0; // number of the end children
 
     public SizeAVLTreeNode(KeyType key, SizeAVLTreeNode leftChild, SizeAVLTreeNode rightChild,
                            SizeAVLTreeNode parent) {

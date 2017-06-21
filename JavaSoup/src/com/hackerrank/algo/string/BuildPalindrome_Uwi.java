@@ -694,7 +694,7 @@ public class BuildPalindrome_Uwi {
         if ((flags & 8) != 0) {
             getCounts(T, C, n, k);
         }
-		/* put all left-most S characters into their buckets */
+		/* put all start-most S characters into their buckets */
         if (1 < m) {
             getBuckets(C, B, k, true); /* find ends of buckets */
             i = m - 1;

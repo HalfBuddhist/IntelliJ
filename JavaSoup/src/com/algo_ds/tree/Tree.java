@@ -18,4 +18,5 @@ public class Tree<KeyType extends Comparable<KeyType>> {
     public int getSize() {
         return size;
     }
+
 }
